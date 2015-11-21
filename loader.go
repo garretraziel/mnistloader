@@ -6,30 +6,32 @@ import (
     "os"
 )
 
-// ReadLabels parses input label file from given path and returns list of MNIST labels
-func ReadLabels(path string) ([]float64, error) {
+// ReadLabels parses input label file from given path and returns list of MNIST labels and number of distinct labels
+func ReadLabels(path string) ([]float64, int, error) {
     f, err := os.Open(path)
     if err != nil {
-        return nil, err
+        return nil, 0, err
     }
 
     var magic int32
     var itemCount int32
     var item byte
     if err := binary.Read(f, binary.BigEndian, &magic); err != nil || magic != 2049 {
-        return nil, errors.New("mnistloader: cannot read magic number in label file")
+        return nil, 0, errors.New("mnistloader: cannot read magic number in label file")
     }
     if err := binary.Read(f, binary.BigEndian, &itemCount); err != nil {
-        return nil, errors.New("mnistloader: cannot read count of labels")
+        return nil, 0, errors.New("mnistloader: cannot read count of labels")
     }
     items := make([]float64, itemCount)
+    distinct := make(map[float64]bool)
     for i := int32(0); i < itemCount; i++ {
         if err := binary.Read(f, binary.BigEndian, &item); err != nil {
-            return nil, errors.New("mnistloader: cannot read label")
+            return nil, 0, errors.New("mnistloader: cannot read label")
         }
         items[i] = float64(item)
+        distinct[float64(item)] = true
     }
-    return items, nil
+    return items, len(distinct), nil
 }
 
 // ReadImages parses input image file and returns list of MNIST images
