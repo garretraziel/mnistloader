@@ -34,7 +34,7 @@ func ReadLabels(path string) ([]float64, int, error) {
     return items, len(distinct), nil
 }
 
-// ReadImages parses input image file and returns list of MNIST images and length of one input value
+// ReadImages parses input image file and returns list of normalized MNIST images and length of one input value
 func ReadImages(path string) ([][]float64, int, error) {
     f, err := os.Open(path)
     if err != nil {
@@ -65,7 +65,7 @@ func ReadImages(path string) ([][]float64, int, error) {
             return nil, 0, errors.New("mnistloader: cannot read image")
         }
         for j, val := range item {
-            items[i][j] = float64(val)
+            items[i][j] = float64(val) / 256.0 // normalize
         }
     }
     return items, int(rows*cols), nil
